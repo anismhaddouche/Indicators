@@ -1,0 +1,110 @@
+# [tool.poetry]
+# name = "test"
+# version = "0"
+# description = "This is a test project for the computation of a semantic indicator for some LabNbook missions"
+# authors = ["anismhaddouche <anisahdd@gmail.com>"]
+# readme = "README.md"
+
+# [tool.poetry.dependencies]
+# python = "^3.11"
+# pandas = "^1.5.2"
+# mysql-connector = "^2.2.9"
+# toml = "^0.10.2"
+# types-toml = "^0.10.8.1"
+# prefect = "^2.7.8"
+
+
+# [build-system]
+# requires = ["poetry-core"]
+# build-backend = "poetry.core.masonry.api"
+
+
+# ============================== Configuration ==============================
+
+# -- Acces to you database
+[database]
+user = "root"
+password = "11950022"
+host = "localhost"
+database_name  = "Labnbook"
+
+# -- Specifies if we keep all mission in the versioning folder (set all = true) or a subset of mission (set all = false put the missions id's in subset)
+
+[missions]
+all = false # Choose all missions in the versioning folder
+subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
+#subset = ["1376","453"]
+# --- Semantic indicator 
+[nlp]
+model  = "all-MiniLM-L6-v2"
+spacy_model  = "scripts/utils/fr_LabnbookNer-0.0.0"
+
+
+# -- Regex patterns used to parse the text (can be improved)
+[regex_text_patterns]
+    [regex_text_patterns.DATA_KATEX] 
+        expression = "data-katex=\"(.*?)\">"
+        description = "Found LaTex formulas in the data-katex html class"
+    [regex_text_patterns.DATA_TABLE]
+        expression = "(<table)([\\S\\s]+)(table>)"
+        description = "Found tables in the table html class"
+    [regex_text_patterns.DATA_TABLE_CELL]
+        expression = "(</td>)"
+        description = "Found end of Cells in the tr html table class"
+    [regex_text_patterns. PARAGRAPH_END]
+        expression = "(</p>)"
+        description = "Found paragraphs end in the html"
+    [regex_text_patterns.PARAGRAPH_END-DOT]
+        expression = "\\.§"
+        description =  "Found text like .§ in the html"
+    [regex_text_patterns.MULTIPLE_END_PARAGRAPHS]
+        expression = "(§\\s+){2,}|§§{1,}"
+        description = "Found multiple new paragraphs in the html "
+    [regex_text_patterns.MULTIPLE_END_PARAGRAPHS_IN_END_LABDOC]
+        expression = "§{2,}"
+        description =  "Found §§ in the end of a labdoc"
+    [regex_text_patterns.NEW_LINES]
+        expression = "(\\n)\\s+|s\\1+"
+        description = "Found newlines (ex. '\\n' or '\\n\\n)"
+    [regex_text_patterns.DOTS]
+        expression = "(\\.+)"
+        description = "Found a dot succession (ex. '.....')"
+    [regex_text_patterns.SPACES]
+        expression="\\s+"
+        description= "Found a space succession (ex.'   ')"
+    [regex_text_patterns.DASHES]
+        expression="(\\-+)"
+        description= "Found a dash succession (ex. '----')"
+    [regex_text_patterns.UNDERSCORES]
+        expression="(_+)"
+        description= "Found an underscore succession (ex. '___')"
+    [regex_text_patterns.BACKSLASH]
+        expression= "(\\\\)"
+        description= "Found backslash"
+    [regex_text_patterns.COMA_NUMBERS]
+        expression="(\\d)(,)(\\d)"
+        description= "Found a coma in a number (ex. '1,000')"
+    [regex_text_patterns.MATH_OP_EXTRA_SPACES]
+        expression="(.*?)\\s{0,}(=|-|\\+|\\*|/|±|×|x|≈|÷|≠|≡|∼|≤|<|≪|≥|≫|∓|⋅|<=>)\\s{0,}(.*?)"
+        description= "Found an operator with extra spaces (ex. 'a = b')"
+    [regex_text_patterns.SI_UNITS_SPACE]
+        expression="(\\d+)\\s{1,}([\\*]{0,}(10)|°C |[cdCDkKMmµGk]{0,}([mM]ol|[cC]d|m./.|Ω|µ|[Rr]ad|[oO]hm|H[zZ]|lm|lux|[kK]at|pa|kg|Gy|(N|J|W|A|V|C|T|F|H|K|g|s|m)(\\s|.|,)))"
+        description= "Found a space between a number and a SI unit (ex. 1 m)"
+    [regex_text_patterns.BRACKETS_SPACES]
+        expression="(\\(|\\[|\\{)\\s{0,}(.*?)\\s{0,}(\\}|\\]|\\))"
+        description = "Found a space between round, square and curly brackets and a text (ex. '(a)'"
+    [regex_text_patterns.WORD_SPACES_COMA-DOT]
+        expression ="(\\w)\\s{1,}(,.|\\..)"
+        description = "Found a space between a word and a coma or dot (ex. hello  .)"
+    [regex_text_patterns.COMA_WORD]
+        expression="(\\,)([a-zA-Z])"
+        description=  "Found a coma paste in word (ex. ',hello')"
+    [regex_text_patterns.WORD_COLON]
+        expression="([a-zA-Z])(\\:)\\s+"
+        description =  "Found a colon paste in word (ex. 'hello:  ')"
+
+
+[regex_component]
+LATEX_MATH = "[$]{1,2}(.*?)[$]{1,2}"
+TABLE = "¥¥(.*?)¥¥"
+

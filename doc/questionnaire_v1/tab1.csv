@@ -1,0 +1,14 @@
+Classification;Co-écriture;;;;;Équilibre de contribution;;;;
+Labdoc;Faible;Moyen;Fort;Machine sans RC;machine avec RC;Faible ;Moyen;Fort;machine sans RC;Machine avec RC
+1;0;4;12;Moyen;Faible;0;7;9;Moyen;Faible
+2;14;1;1;Faible;Faible;0;7;9;Fort;Moyen
+3;1;0;15;Fort;Moyen;1;2;13;Fort;Moyen
+4;3;10;3;Moyen;Faible;0;1;15;Fort;Fort
+5;12;2;2;Moyen;Faible;16;0;0;Moyen;Faible
+6;8;7;1;Moyen;Faible;0;1;15;Fort;Fort
+7;15;1;0;Faible;Faible;14;2;0;Moyen;Faible
+8;0;6;10;Fort;Fort;0;7;9;Moyen;Fort
+9;14;2;0;Faible;Moyen;13;3;0;Faible;Faible
+10;14;2;0;Faible;Faible;1;12;3;Fort;Fort
+11;16;0;0;Faible;Faible;16;0;0;Faible;Faible
+12;15;1;0;Faible;Faible;16;0;0;Faible;Faible
