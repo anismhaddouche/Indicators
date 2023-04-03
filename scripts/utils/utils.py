@@ -6,7 +6,7 @@ from spacy.tokens import Doc
 import numpy as np
 from typing import Tuple, List
 import typer
-
+import pandas as pd 
 
 # -----------------------------------------------------------------
 
@@ -245,16 +245,49 @@ def get_authors_changes(authors : List[int]) -> List[int] :
     return  last_indices
 
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 
-def visualize_html(html_code: str):
-    """"
-    Visualize an html code.
+def get_writing_time(id_labdoc : int, trace : pd.DataFrame)-> dict:
     """
-    with open("tmp/preview.html", "w") as f:
-        f.write(html_code)
-    try: 
-        webbrowser.open("tmp/preview.html")
-    except Exception as e: 
-        print(f"The following error {e} occurs when previewing the file")
+    Calculates the number of modification (trace 9) for each change of authors and also multiplies it by 20 or 30 to have the effective writing time 
+    output : ex : {445494: [(12673, 15, 450), (12661, 2, 60), (12673, 47)]} 
+    """ 
+    labdoc  = trace[trace['id_labdoc'] == int(id_labdoc)]
+
+    if labdoc.empty:
+        pass
+    else:
+        labdoc_time = labdoc["action_time"].iloc[0]
+        date_to_compare = pd.Timestamp('2020-05-16')
+
+        if labdoc_time.date() < date_to_compare.date():
+            factor = 20
+        else:
+            factor = 30
+        count_list = []
+        current_author = None
+        current_count = 0
+        for author in labdoc['id_user']:
+            if author == current_author:
+                current_count += 1
+            else:
+                if current_author is not None:
+                    count_list.append((current_author, current_count,current_count*factor))
+                current_author = author
+                current_count = 1
+        count_list.append((current_author, current_count,current_count*factor))
+        
+        return {int(id_labdoc) : count_list}
+
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    def visualize_html(html_code: str):
+        """"
+        Visualize an html code.
+        """
+        with open("tmp/preview.html", "w") as f:
+            f.write(html_code)
+        try: 
+            webbrowser.open("tmp/preview.html")
+        except Exception as e: 
+            print(f"The following error {e} occurs when previewing the file")

@@ -79,7 +79,7 @@ def extract_text(config: dict, logger) -> None:
         }
     """
     regex_text_patterns = config["regex_text_patterns"]
-    id_missions = selected_missions(config)
+    id_missions = selected_missions(config["missions"])
 
     # Get id's of initial labdocs texts
     with gzip.open(

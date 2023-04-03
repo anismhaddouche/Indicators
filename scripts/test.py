@@ -19,7 +19,7 @@ st.set_page_config(
 # 1640
 
 #-- Prepare data
-summary_all  = pd.read_csv('/Users/anis/test_labnbook/semantic_indicator/data/tmp/reports/summary_all.csv', index_col = [0])
+summary_all  = pd.read_csv('/Users/anis/test_labnbook/Indicators/data/tmp/reports/summary_all.csv', index_col = [0])
 col1, col2, col3 = st.columns(3)
 # Ajoute un bouton selectbox à chaque colonne
 with col1:
