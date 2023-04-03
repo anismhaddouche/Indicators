@@ -1,4 +1,5 @@
 data/versioning/*
+!data/tmp/versioning/
 data/tmp/0_missions_texts/
 data/tmp/1_missions_contribs/
 data/tmp/0_labdocs_texts_init.json.gz
