@@ -172,12 +172,23 @@ def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df
     # f" SELECT id_trace, id_labdoc,id_user ,id_action, action_time from trace WHERE id_labdoc in {tuple(id_labdoc)}  Order By id_labdoc ASC, action_time ASC", conn)
     trace = pd.read_sql(
     " SELECT id_trace, id_labdoc,id_user ,id_action, action_time from trace Order By id_labdoc ASC, action_time ASC", conn)
-    res = {}
-    for selectec_labdoc in id_labdoc:
-       res[selectec_labdoc] = get_writing_time(selectec_labdoc,trace)
+    # res = {}
+    # for selectec_labdoc in id_labdoc:
+    #    res[selectec_labdoc] = get_writing_time(selectec_labdoc,trace)
             
-    with open("data/tmp/reports/3_times.json", "w") as f :
-        json.dump(res,f)
+    # with open("data/tmp/reports/3_times.json", "w") as f :
+    #     json.dump(res,f)
+    res = pd.DataFrame()
+    for selectec_labdoc in id_labdoc:
+       df = get_writing_time(selectec_labdoc,trace)
+       res = pd.concat([res, df], axis=0,ignore_index= True)
+
+            
+    # with open("data/tmp/reports/3_times.json", "w") as f :
+    #     json.dump(res,f)
+
+    res.columns=["id_trace","id_labdoc","id_user","n_modify_id","effective_time"]
+    res.to_csv("data/tmp/reports/3_times.csv")
 
 # ----------
 
@@ -186,8 +197,8 @@ def run_flow_3(config:dict):
     config_db = config['database']
     logger = get_run_logger()
     try:
-        df_semantic_indicator = semantic_indicator_csv("data/tmp/2_semantic.json")
-        df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv("data/tmp/2_collab.json.gz")
+        # df_semantic_indicator = semantic_indicator_csv("data/tmp/2_semantic.json")
+        # df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv("data/tmp/2_collab.json.gz")
         get_times(config_db, df_summary_nonsemantic_indicators, df_semantic_indicator)
         logger.info("Flow was run succefully")
     except Exception as e:
