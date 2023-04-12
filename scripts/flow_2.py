@@ -130,7 +130,7 @@ def semantic_indicator(config_nlp : dict,config_missions : dict ):
         logger.info(f"Mission {selected_mission} finished. There is still {len(id_missions) - nb_missions} missions")
 
     Path("data/tmp/reports").mkdir(parents=True, exist_ok=True)
-    with open("data/tmp/reports/2_semantic.json", "w") as f:
+    with open("data/tmp/2_semantic.json", "w") as f:
         json.dump(score_missions, f)
 
 

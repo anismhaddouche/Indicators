@@ -5,7 +5,8 @@ import os
 import pandas as pd 
 import numpy as np
 import ujson
-import warnings    
+import warnings   
+import seaborn as sns 
 warnings.filterwarnings('ignore')
 st.set_page_config(
     page_title="My Streamlit App",
@@ -51,22 +52,39 @@ def make_dashboard():
     col6.metric("Èquilibre de contribution",summary_labdoc['eqc'].iloc[-1].round(2))
 
 
-    # --- Charts 
-    df_chart_1 = summary_labdoc[['eqc','coec','1-sim']]
-    st.line_chart(df_chart_1)
-    st.line_chart(edition_time.apply(lambda x: x.total_seconds() / 3600))
+   
 
     # --- Tables
-
+    with open("/Users/anis/test_labnbook/Indicators/data/tmp/reports/3_times.json","r") as f : 
+              times = json.load(f)
+    df_times = pd.DataFrame(times[str(selected_labdoc)], columns=["id_trace","id_user","n_modify_id","effective_time"])
+    df_times = df_times.set_index("id_trace")
+    summary_labdoc = summary_labdoc.reindex(columns=['action_time','edition_time','n_tokens','n_segments','teacher','user','sim','eqc', 'coec','1-sim'])
+    df_times.index = df_times.index.astype(str)
+    summary_labdoc.index = summary_labdoc.index.astype(str)
+    merge = pd.merge(df_times,summary_labdoc, left_index=True, right_index=True, how='right')
+    st.dataframe(merge)
+    
+     # --- Charts 
+    df_chart_1 = merge[['eqc','coec','1-sim']]
+    st.line_chart(df_chart_1)
+    st.line_chart(edition_time.apply(lambda x: x.total_seconds() / 3600))     # Evolution time in minutes
+ 
+    # # --- Heatmap
+    # fig = sns.heatmap(merge[['eqc','coec','1-sim','effective_time']].corr(), annot=True, cmap='coolwarm')
+    # st.pyplot(fig.get_figure())
     # --- Json
     if st.button('Détails'):
-        summary_labdoc = summary_labdoc.reindex(columns=['action_time','edition_time','n_tokens','n_segments','teacher','user','sim','eqc', 'coec','1-sim'])
+
         st.dataframe(summary_labdoc)
+        st.dataframe(df_times)
+
         with gzip.open(f'data/tmp/0_missions_texts/{selected_mission}.json.gz', 'r') as f:
                 data = json.load(f)
 
         labdoc = json.dumps(data[str(selected_report)][str(selected_labdoc)], indent=4, ensure_ascii=False)
         st.code(labdoc, language="json")
+
 
 
 if __name__ == "__main__":

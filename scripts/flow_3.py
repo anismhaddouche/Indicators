@@ -7,7 +7,8 @@ from prefect import task, flow, get_run_logger
 import mysql.connector as mariadb
 import toml
 from utils.utils import get_writing_time
-
+import warnings
+warnings.filterwarnings("ignore")
 # --------
 
 @task(name = "summary_nonsemantic_indicators")
@@ -69,7 +70,7 @@ def summary_nonsemantic_indicators_csv(Path: str) -> pd.DataFrame:
             "coec",
         ],
     )
-    df.to_csv("data/tmp/reports/summary_nonsemantic_indicators.csv")
+    df.to_csv("data/tmp/reports/3_summary_nonsemantic_indicators.csv")
     return df
 
 # --------
@@ -126,7 +127,7 @@ def semantic_indicator_csv(Path: str) -> pd.DataFrame:
             "sim",
         ],
     )
-    df.to_csv("data/tmp/reports/summary_semantic_indicator.csv")
+    df.to_csv("data/tmp/reports/3_summary_semantic_indicator.csv")
     return df
 
 # ----------
@@ -166,14 +167,17 @@ def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df
     df_all.to_csv("data/tmp/reports/summary_all.csv")
     # -----
     id_labdoc = df_all_0["id_labdoc"]
-    trace = pd.read_sql( f" SELECT id_labdoc,id_user, action_time from trace WHERE id_labdoc in {tuple(id_labdoc)}  AND id_action=9 Order By id_labdoc ASC, action_time ASC", conn)
-    res = []
+    # trace = pd.read_sql( f" SELECT id_trace,id_labdoc,id_user, action_time from trace WHERE id_labdoc in {tuple(id_labdoc)}  AND id_action=9 Order By id_labdoc ASC, action_time ASC", conn)
+    # trace = pd.read_sql(
+    # f" SELECT id_trace, id_labdoc,id_user ,id_action, action_time from trace WHERE id_labdoc in {tuple(id_labdoc)}  Order By id_labdoc ASC, action_time ASC", conn)
+    trace = pd.read_sql(
+    " SELECT id_trace, id_labdoc,id_user ,id_action, action_time from trace Order By id_labdoc ASC, action_time ASC", conn)
+    res = {}
     for selectec_labdoc in id_labdoc:
-        res.append(get_writing_time(selectec_labdoc,trace))
-    
-    with open("data/tmp/reports/times.json", "w") as f :
+       res[selectec_labdoc] = get_writing_time(selectec_labdoc,trace)
+            
+    with open("data/tmp/reports/3_times.json", "w") as f :
         json.dump(res,f)
-
 
 # ----------
 
@@ -182,8 +186,8 @@ def run_flow_3(config:dict):
     config_db = config['database']
     logger = get_run_logger()
     try:
-        df_semantic_indicator = semantic_indicator_csv("data/tmp/reports/semantic.json")
-        df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv("/data/tmp/2_collab.json.gz")
+        df_semantic_indicator = semantic_indicator_csv("data/tmp/2_semantic.json")
+        df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv("data/tmp/2_collab.json.gz")
         get_times(config_db, df_summary_nonsemantic_indicators, df_semantic_indicator)
         logger.info("Flow was run succefully")
     except Exception as e:

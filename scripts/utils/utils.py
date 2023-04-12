@@ -246,14 +246,19 @@ def get_authors_changes(authors : List[int]) -> List[int] :
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-def get_writing_time(id_labdoc : int, trace : pd.DataFrame)-> dict:
+def get_writing_time(id_labdoc : int, trace : pd.DataFrame)-> pd.DataFrame:
     """
     Calculates the number of modification (trace 9) for each change of authors and also multiplies it by 20 or 30 to have the effective writing time 
-    output : ex : {445494: [(12673, 15, 450), (12661, 2, 60), (12673, 47)]} 
+    output: a list of tuples (id_trace, author_id, num_modifications, writing_time).  
+    ex: [(7481881, 12673, 23, 690),
+                        (7482763, 12661, 4, 120),
+                        (7482817, 12673, 14, 420),
+                        (7482845, 12661, 2, 60),
+                        [7505160, 12673, 58, 1740]]} 
     """ 
+    #TODO: improve this code which is not optimal!
     labdoc  = trace[trace['id_labdoc'] == int(id_labdoc)]
-
+    labdoc.reset_index(drop=True,inplace=True)
     if labdoc.empty:
         pass
     else:
@@ -267,17 +272,18 @@ def get_writing_time(id_labdoc : int, trace : pd.DataFrame)-> dict:
         count_list = []
         current_author = None
         current_count = 0
-        for author in labdoc['id_user']:
+        for author,id_trace in zip(labdoc['id_user'],labdoc["id_trace"]):
             if author == current_author:
                 current_count += 1
             else:
                 if current_author is not None:
-                    count_list.append((current_author, current_count,current_count*factor))
+                    idx  = labdoc[labdoc["id_trace"]==id_trace].index
+                    count_list.append((int(labdoc.loc[idx-1].id_trace.values[0]),current_author, current_count,current_count*factor))
                 current_author = author
                 current_count = 1
-        count_list.append((current_author, current_count,current_count*factor))
+        count_list.append([id_trace,current_author, current_count,current_count*factor])
         
-        return {int(id_labdoc) : count_list}
+        return count_list
 
     # ----------------------------------------------------------------------------------------------------------------------
 
