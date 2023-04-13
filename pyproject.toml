@@ -1,24 +1,3 @@
-# [tool.poetry]
-# name = "test"
-# version = "0"
-# description = "This is a test project for the computation of a semantic indicator for some LabNbook missions"
-# authors = ["anismhaddouche <anisahdd@gmail.com>"]
-# readme = "README.md"
-
-# [tool.poetry.dependencies]
-# python = "^3.11"
-# pandas = "^1.5.2"
-# mysql-connector = "^2.2.9"
-# toml = "^0.10.2"
-# types-toml = "^0.10.8.1"
-# prefect = "^2.7.8"
-
-
-# [build-system]
-# requires = ["poetry-core"]
-# build-backend = "poetry.core.masonry.api"
-
-
 # ============================== Configuration ==============================
 
 # -- Acces to you database
@@ -39,6 +18,10 @@ subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","53
 model  = "all-MiniLM-L6-v2"
 spacy_model  = "scripts/utils/fr_LabnbookNer-0.0.0"
 
+
+#--------------------------------------------------------------------------------
+# Do not change thi section 
+#--------------------------------------------------------------------------------
 
 # -- Regex patterns used to parse the text (can be improved)
 [regex_text_patterns]
@@ -102,7 +85,6 @@ spacy_model  = "scripts/utils/fr_LabnbookNer-0.0.0"
     [regex_text_patterns.WORD_COLON]
         expression="([a-zA-Z])(\\:)\\s+"
         description =  "Found a colon paste in word (ex. 'hello:  ')"
-
 
 [regex_component]
 LATEX_MATH = "[$]{1,2}(.*?)[$]{1,2}"

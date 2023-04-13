@@ -1,2 +1,0 @@
-all: 
-				mkdir data/tmp
