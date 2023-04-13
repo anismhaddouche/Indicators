@@ -281,7 +281,7 @@ def get_writing_time(id_labdoc : int, trace : pd.DataFrame)-> pd.DataFrame:
                     count_list.append((int(labdoc.loc[idx-1].id_trace.values[0]),id_labdoc,current_author, current_count,current_count*factor))
                 current_author = author
                 current_count = 1
-        count_list.append([id_trace,current_author, id_labdoc,current_count,current_count*factor])
+        count_list.append([id_trace,id_labdoc,current_author,current_count,current_count*factor])
         
         return pd.DataFrame(count_list)
 

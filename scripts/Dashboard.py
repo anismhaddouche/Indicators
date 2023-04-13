@@ -21,14 +21,17 @@ def make_dashboard():
     description #TODO
     """
     #-- Prepare data
-    summary_all  = pd.read_csv('/Users/anis/test_labnbook/Indicators/data/tmp/reports/summary_all.csv', index_col = [0])
+    # -----  Chossing a Labdoc
+    summary_all  = pd.read_csv(os.getcwd()+'/data/tmp/reports/3_summary_all.csv', index_col = [0])
     col1, col2, col3 = st.columns(3)
     with col1:
-        selected_mission = st.selectbox('Select a mission', np.sort(summary_all["id_mission"].unique()))
+        selected_mission = st.selectbox('Select a Mission', np.sort(summary_all["id_mission"].unique()))
     with col2:
-        selected_report = st.selectbox("Select a report", np.sort(summary_all[summary_all["id_mission"]==selected_mission]["id_report"].unique()))
+        selected_report = st.selectbox("Select a Report", np.sort(summary_all[summary_all["id_mission"]==selected_mission]["id_report"].unique()))
     with col3:
-        selected_labdoc = st.selectbox("Select a labdoc", np.sort(summary_all[summary_all["id_report"]==selected_report]["id_labdoc"].unique()))  
+        selected_labdoc = st.selectbox("Select a Labdoc", np.sort(summary_all[summary_all["id_report"]==selected_report]["id_labdoc"].unique()))  
+    
+    # ----- Preparing the summary_all.csv file
     summary_labdoc = summary_all[summary_all["id_labdoc"] == int(selected_labdoc)]
     summary_labdoc.drop(['id_mission','id_report','id_labdoc'],axis =1, inplace = True)
     summary_labdoc['action_time'] = pd.to_datetime(summary_labdoc['action_time'])
@@ -38,6 +41,16 @@ def make_dashboard():
     summary_labdoc['1-sim'] = 1 - summary_labdoc["sim"]
     edition_time = summary_labdoc['edition_time']
     summary_labdoc["edition_time"] = summary_labdoc["edition_time"].astype(str)
+
+
+    # ----- Preparing the 3_times.csv file
+    times_all = pd.read_csv(os.getcwd()+"/data/tmp/reports/3_times.csv",index_col=[0])
+    times_labdoc = times_all[times_all["id_labdoc_x"]==selected_labdoc]
+    times_labdoc.rename(columns={"id_labdoc_x": "id_labdoc"},inplace =True)
+    times_labdoc.drop(["id_labdoc_y"], axis = 1 , inplace = True)
+    times_labdoc = times_labdoc.set_index("id_trace")
+    times_labdoc.index = times_labdoc.index.astype(str)
+    times_labdoc_thin = times_labdoc[["n_modify_id","effective_time"]]
 
     # --- Metrics 
     col1, col2, col3, col4, col5, col6 = st.columns(6)
@@ -52,36 +65,21 @@ def make_dashboard():
     col6.metric("Èquilibre de contribution",summary_labdoc['eqc'].iloc[-1].round(2))
 
 
-   
-
-    # --- Tables
-    with open("/Users/anis/test_labnbook/Indicators/data/tmp/reports/3_times.json","r") as f : 
-              times = json.load(f)
-    df_times = pd.DataFrame(times[str(selected_labdoc)], columns=["id_trace","id_user","n_modify_id","effective_time"])
-    df_times = df_times.set_index("id_trace")
-    summary_labdoc = summary_labdoc.reindex(columns=['action_time','edition_time','n_tokens','n_segments','teacher','user','sim','eqc', 'coec','1-sim'])
-    df_times.index = df_times.index.astype(str)
-    summary_labdoc.index = summary_labdoc.index.astype(str)
-    merge = pd.merge(df_times,summary_labdoc, left_index=True, right_index=True, how='right')
+    merge = pd.merge(times_labdoc_thin,summary_labdoc, left_index=True, right_index=True,how="right")
     st.dataframe(merge)
-    
+
      # --- Charts 
     df_chart_1 = merge[['eqc','coec','1-sim']]
     st.line_chart(df_chart_1)
     st.line_chart(edition_time.apply(lambda x: x.total_seconds() / 3600))     # Evolution time in minutes
  
-    # # --- Heatmap
-    # fig = sns.heatmap(merge[['eqc','coec','1-sim','effective_time']].corr(), annot=True, cmap='coolwarm')
-    # st.pyplot(fig.get_figure())
-    # --- Json
-    if st.button('Détails'):
 
+    # --- Details
+    if st.button('Details'):
         st.dataframe(summary_labdoc)
-        st.dataframe(df_times)
-
+        st.dataframe(times_labdoc)
         with gzip.open(f'data/tmp/0_missions_texts/{selected_mission}.json.gz', 'r') as f:
                 data = json.load(f)
-
         labdoc = json.dumps(data[str(selected_report)][str(selected_labdoc)], indent=4, ensure_ascii=False)
         st.code(labdoc, language="json")
 
