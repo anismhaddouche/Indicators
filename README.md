@@ -9,7 +9,7 @@
 
 
 # Reproduire le projet 
-NB : In the following, we suppose the labnbook database is installed locally in you machine and, also, the versionning files. 
+NB : In the following, we suppose the labnbook database is installed locally in you machine and, also, the versionning files in the folder "data/versioning". 
 
 * Clone this repository 
   

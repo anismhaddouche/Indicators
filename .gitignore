@@ -1,0 +1,9 @@
+data/versioning/*
+!data/versioning/.gitkeep 
+data/tmp/*
+!data/tmp/.gitkeep 
+
+
+.DS_Store
+.*
+dfdf
