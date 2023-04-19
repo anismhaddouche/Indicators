@@ -163,7 +163,7 @@ def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df
     df_all_0["id_trace"] = df_all_0["id_trace"].astype(np.int64)
     df_all_0["id_labdoc"] = df_all_0["id_labdoc"].astype(np.int64)
     df_all = pd.merge(trace, df_all_0, 'right')
-    df_all.to_csv("data/tmp/reports/summary_all.csv")
+    df_all.to_csv("data/tmp/reports/3_summary_all.csv")
     # print(trace.info(),'\n',df_all_0.info())
    
     # -----
