@@ -48,8 +48,8 @@ def get_meta(doc: Doc) -> dict:
 # -----------------------------------------------------------------
 
 @task(
-    name="contrib_and_segmentation")
-def contrib_and_segmentation(config: dict):
+    name="contrib_and_segmentation", log_prints=True)
+def contrib_and_segmentation(config: dict, path_for_flow_1: Path) -> Path:
     """
     output :
     dict[id_report][id_labdoc] = list([text, user, id_trace])
@@ -72,7 +72,7 @@ def contrib_and_segmentation(config: dict):
         # data_out = {}
         data_out: Dict[str, Dict[str, List[Tuple[str, int, int]]]] = {"": {"": []}}
         # Get the path of each mission
-        path = f"data/tmp/0_missions_texts/{selected_mission}.json.gz"
+        path = f"{path_for_flow_1}/{selected_mission}.json.gz"
         # Open the mission
         with gzip.open(path, "rt", encoding="utf-8") as zipfile:
             # Load the mission
@@ -121,19 +121,19 @@ def contrib_and_segmentation(config: dict):
         logger.info(
             f"Mission {selected_mission} finished. There is still {len(id_missions) - nb_missions} missions"
         )
-
+        return Path("data/tmp/1_missions_contribs")
 # ----------------------------------------------------------------
 
 @flow(name ="flow_1")
-def run_flow_1(config: dict):
+def run_flow_1(config: dict, path_for_flow_1):
     logger = get_run_logger()
     try:
-        contrib_and_segmentation(config)
+      path_for_flow_2 =  contrib_and_segmentation(config, path_for_flow_1)
     except Exception as e:
         logger.critical(f"The following Exception occurred {e}")
-
+    return path_for_flow_2
 # ----------------------------------------------------------------
-if __name__ == "__main__":
-    with open("pyproject.toml", "r") as f:
-        config = toml.loads(f.read())
-    run_flow_1(config=config)
+# if __name__ == "__main__":
+#     with open("pyproject.toml", "r") as f:
+#         config = toml.loads(f.read())
+#     run_flow_1(config=config, path_for_flow_1)

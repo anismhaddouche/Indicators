@@ -2,6 +2,7 @@ import mysql.connector as mariadb
 import json
 import gzip, toml
 import os
+import prefect
 from prefect import flow, task, get_run_logger
 from pathlib import Path
 from utils.utils import *
@@ -9,10 +10,10 @@ from utils.components import *
 from utils.diff import *
 import warnings
 warnings.filterwarnings("ignore")
+from pathlib import Path 
 
-
-@task(name="extract_text_init")
-def extract_text_init(database: dict, logger) -> None:
+@task(name="extract_text_init", log_prints=True)
+def extract_text_init(database: dict, logger) -> Path:
     """
     Get text labdocs and possible initial texts (teacher)
     """
@@ -57,11 +58,12 @@ def extract_text_init(database: dict, logger) -> None:
         json.dump(data, zipfile, ensure_ascii=False, indent=4)
 
     logger.info(f"The total number of LabDoc is {len(data.keys())}")
+    return Path("data/tmp/0_labdocs_texts_init.json.gz")
 
 
 # ----------------------------------------------------------------------------------------
-@task(name="extract_text")
-def extract_text(config: dict, logger) -> None:
+@task(name="extract_text", log_prints=True)
+def extract_text(config: dict, logger, path:Path) -> Path:
     """
     Description:
 
@@ -83,7 +85,7 @@ def extract_text(config: dict, logger) -> None:
 
     # Get id's of initial labdocs texts
     with gzip.open(
-        "data/tmp/0_labdocs_texts_init.json.gz", "rt", encoding="utf-8"
+        path, "rt", encoding="utf-8"
     ) as zipfile:
         labdoc_text_init = json.load(zipfile)
     # pbar = tqdm.tqdm(total=len(id_missions),ascii=' >=',colour='green',desc='Missions')
@@ -150,6 +152,7 @@ def extract_text(config: dict, logger) -> None:
     logger.info(f"Number of mission treated =  {nb_missions}")
     logger.info(f"Number of labdoc treated =  {nb_labdocs}")
 
+    return Path("data/tmp/0_missions_texts")
 
 # ----------------------------------------------------------------
 @flow(
@@ -159,13 +162,13 @@ def extract_text(config: dict, logger) -> None:
 def run_flow_0(config: dict):
     logger = get_run_logger()
     try:
-        extract_text_init(config["database"], logger=logger)
-        extract_text(config, logger=logger)
+        path = extract_text_init(config["database"], logger=logger)
+        path_for_flow_1 = extract_text(config, logger=logger, path=path)
     except Exception as e:
         logger.critical(f"The following Exception occurred {e}")
-
-
-if __name__ == "__main__":
-    with open("pyproject.toml", "r") as f:
-        config = toml.loads(f.read())
-    run_flow_0(config=config)
+    return path_for_flow_1
+    
+# if __name__ == "__main__":
+#     with open("pyproject.toml", "r") as f:
+#         config = toml.loads(f.read())
+#     run_flow_0(config=config)

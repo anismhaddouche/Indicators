@@ -11,8 +11,8 @@ database_name  = "Labnbook"
 
 [missions]
 all = false # Choose all missions in the versioning folder
-subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
-#subset = ["1376","453"]
+# subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
+subset = ["1376","453"]
 # --- Semantic indicator 
 [nlp]
 model  = "all-MiniLM-L6-v2"
@@ -20,7 +20,7 @@ spacy_model  = "scripts/utils/fr_LabnbookNer-0.0.0"
 
 
 #--------------------------------------------------------------------------------
-# Do not change thi section 
+# Do not modify this section 
 #--------------------------------------------------------------------------------
 
 # -- Regex patterns used to parse the text (can be improved)
@@ -89,4 +89,5 @@ spacy_model  = "scripts/utils/fr_LabnbookNer-0.0.0"
 [regex_component]
 LATEX_MATH = "[$]{1,2}(.*?)[$]{1,2}"
 TABLE = "¥¥(.*?)¥¥"
+
 

@@ -9,9 +9,11 @@ import toml
 from utils.utils import get_writing_time
 import warnings
 warnings.filterwarnings("ignore")
+from pathlib import Path
 # --------
 
-@task(name = "summary_nonsemantic_indicators")
+
+@task(name="summary_nonsemantic_indicators", log_prints=True)
 def summary_nonsemantic_indicators_csv(Path: str) -> pd.DataFrame:
     """
     Create a csv summary file for the nonsemantic indicators (co-writing and the balance of contribution)
@@ -75,7 +77,8 @@ def summary_nonsemantic_indicators_csv(Path: str) -> pd.DataFrame:
 
 # --------
 
-@task(name = "semantic_indicator")
+
+@task(name="semantic_indicator", log_prints=True)
 def semantic_indicator_csv(Path: str) -> pd.DataFrame:
     """
     Compute a csv file which resume  semantic indicator  result unsing the parameters in the config file.
@@ -133,7 +136,7 @@ def semantic_indicator_csv(Path: str) -> pd.DataFrame:
 # ----------
 
 @task(name = "get_times")
-def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df_semantic_indicator:pd.DataFrame):
+def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df_semantic_indicator:pd.DataFrame) -> Path:
     """
     Compute some metrics depending on the time
 
@@ -193,27 +196,28 @@ def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df
     times_df = pd.merge(times_df,df_all, on="id_trace", how ="inner")
     times_df.to_csv("data/tmp/reports/3_times.csv")
      
-
+    return Path("data/tmp/reports/3_times.csv")
 
 
 # ----------
 
 @flow(name ="flow_3", description = "Create some reports (indicators, number of word....)")
-def run_flow_3(config:dict):
+def run_flow_3(config: dict, path_1_for_flow_3,  path_2_for_flow_3) :
     config_db = config['database']
     logger = get_run_logger()
     try:
-        df_semantic_indicator = semantic_indicator_csv("data/tmp/2_semantic.json")
-        df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv("data/tmp/2_collab.json.gz")
+        df_semantic_indicator = semantic_indicator_csv(path_2_for_flow_3)
+        df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv(
+            path_1_for_flow_3)
         get_times(config_db, df_summary_nonsemantic_indicators, df_semantic_indicator)
         logger.info("Flow was run succefully")
     except Exception as e:
         logger.critical(f"The flow did not execute correctly. The following exception occurred{e}")
 
-if __name__ == "__main__":
-    with open("pyproject.toml", "r") as f:
-        config = toml.loads(f.read())
-    run_flow_3(config)
+# if __name__ == "__main__":
+#     with open("pyproject.toml", "r") as f:
+#         config = toml.loads(f.read())
+#     run_flow_3(config)
 
 
 

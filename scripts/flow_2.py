@@ -12,10 +12,10 @@ from utils.utils import selected_missions, compute_indicators,get_authors_change
 # from typing import Dict, List, Tuple
 from sentence_transformers import SentenceTransformer, util
 import numpy as np 
+from pathlib import Path
 
-
-@task(name = "nonsemantic_indicators")
-def nonsemantic_indicators(config_missions : dict, debug = False) :
+@task(name="nonsemantic_indicators", log_prints=True)
+def nonsemantic_indicators(config_missions: dict, path_for_flow_2: Path, debug = False) -> Path:
     id_missions = selected_missions(config_missions)
     id_missions.sort()
     logger = get_run_logger()
@@ -28,7 +28,7 @@ def nonsemantic_indicators(config_missions : dict, debug = False) :
     nb_missions = 0
     for selected_mission in  id_missions:
     # for selected_mission in id_missions:
-        path = f"data/tmp/1_missions_contribs/{selected_mission}.json.gz"
+        path = f"{path_for_flow_2}/{selected_mission}.json.gz"
         with gzip.open(path, 'rt', encoding='utf-8') as zipfile:
             if zipfile:
                 data_in = json.load(zipfile)
@@ -63,11 +63,10 @@ def nonsemantic_indicators(config_missions : dict, debug = False) :
         )
     with gzip.open(f"data/tmp/2_collab.json.gz", 'wt', encoding='utf-8') as zipfile:
         json.dump(data_out, zipfile, ensure_ascii=False)
+    return Path("data/tmp/2_collab.json.gz")
 
-
-
-@task(name="semantic_indicator")
-def semantic_indicator(config_nlp : dict,config_missions : dict ):
+@task(name="semantic_indicator", log_prints=True)
+def semantic_indicator(config_nlp: dict, config_missions: dict)-> Path:
     """
     Compute the semantic indicators thanks to the model speciefied in config["nlp"]
     """
@@ -132,23 +131,23 @@ def semantic_indicator(config_nlp : dict,config_missions : dict ):
     Path("data/tmp/reports").mkdir(parents=True, exist_ok=True)
     with open("data/tmp/2_semantic.json", "w") as f:
         json.dump(score_missions, f)
+    return Path("data/tmp/2_semantic.json")
 
 
 
 
 @flow(name ="flow_2", description = "Compute all indicators (co-écriture, équilibre de contribution and the 'semantique' indicator)")
-
-def run_flow_2(config: dict):
+def run_flow_2(config: dict,  path_for_flow_2: Path):
     logger = get_run_logger()
     try:
-        nonsemantic_indicators(config["missions"])
-        semantic_indicator(config["nlp"]["model"],config["missions"])
+        path_1_for_flow_3 = nonsemantic_indicators(config["missions"], path_for_flow_2)
+        path_2_for_flow_3 = semantic_indicator(config["nlp"]["model"],config["missions"])
         logger.info("Flow was run succefully")
     except Exception as e:
         logger.critical(f"The flow did not execute correctly. The following exception occurred{e}")
+    return path_1_for_flow_3,  path_2_for_flow_3
 
-
-if __name__ == "__main__":
-    with open("pyproject.toml", "r") as f:
-        config = toml.loads(f.read())
-    run_flow_2(config=config)
+# if __name__ == "__main__":
+#     with open("pyproject.toml", "r") as f:
+#         config = toml.loads(f.read())
+#     run_flow_2(config=config)
