@@ -1,11 +1,9 @@
-<!-- * run  'make -f Makefile.mk to create some folders '
-* Databse configuration file is saved in pyproject.toml file in the section 
-* Plage de travail : fin du projet - début du projet 
-* Durée d'écriture : n_modifs * 20/30 -->
+
+<!-- [TOC] -->
 
 # How to run the project?
 
-*NB: In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be down by removing is all flows the `Prefect` tags (`@task, @flow and @logger`) and ignoring steps 1 and 2.*
+*NB: In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be down by removing in all python flows (as `flow_0.py`) files the `Prefect` tags (`@task, @flow and @logger`) and ignoring steps 1 and 2.*
 
 1. Create a Prefect account following this [link](https://www.prefect.io/).
 2. Configure Prefect cloud following this [link](https://docs.prefect.io/latest/ui/cloud-local-environment/).
@@ -50,7 +48,7 @@
 
 # Flows description
 
-## Flow_0
+## [flow_0.py](scripts/flow_0.py)
 
 The purpose of this flow is to connect to the previously installed `LabNbook` database and prepare `LabDocs` for the next flow which consists of calculating  contribution matrices.
 
@@ -70,7 +68,7 @@ The purpose of this flow is to connect to the previously installed `LabNbook` da
 * Returns:
   * The folder `data/tmp/0_missions_texts`
 
-## Flow_1
+## [flow_1.py](scripts/flow_1.py) 
 
 The purpose of this flow is to calculate contribution matrices and some variables that describes `LabDocs` as the number of tokens, segments, ... etc.
 
@@ -83,7 +81,7 @@ The purpose of this flow is to calculate contribution matrices and some variable
   * Returns
     * The folder `data/tmp/1_missions_contrib`
 
-## Flow_2
+## [flow_2.py](scripts/flow_2.py) 
 
 The purpose of this flow is to calculate all indicators.
 
@@ -102,7 +100,7 @@ The purpose of this flow is to calculate all indicators.
   * Returns
     * The file `data/tmp/reports/2_semantic.json`
 
-## Flow_3
+## [flow_3.py](scripts/flow_3.py) 
 
 The purpose of this flow is to generate some reports.
 
@@ -126,6 +124,41 @@ The purpose of this flow is to generate some reports.
   * Returns
     * The file `data/tmp/reports/3_times.csv`
 
-# How to improve this work
+<!-- markdownlint-disable MD033 -->
 
-Besides the improvements concerning the quality of the python code, I propose two major improvements paths. The first one concern the nlp model in `scripts/utils/fr_LabnbookNer-0.0.0` used in the task `contrib_and_segmentation` of `flow_1.py`. The second one is the model `"all-MiniLM-L6-v2"` used in the task `semantic_indicator` of the `flow_2.py`. We give below some suggestions in order to improve these two models.
+# How to improve this work?
+
+Besides the improvements concerning the quality of the python code, I propose two major improvements paths. The first one concern the nlp model in `scripts/utils/fr_LabnbookNer-0.0.0` used in the task `contrib_and_segmentation` of [flow_1.py](scripts/flow_1.py) . The second one is the model `all-MiniLM-L6-v2` used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). We give below some suggestions in order to improve these two models.
+
+## Improve the `all-MiniLM-L6-v2` nlp model
+
+### What this model does?
+
+<details><summary> View content </summary>
+
+As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). More precisely, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic contents of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used two evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
+
+It is worth to notice that this model is used sequentially between two Labdoc versions. For instance, given `V1`, `V2` and `V3`, results is of the form
+
+* $similarity(v_1,v_1) = s_1 =1$
+* $similarity(v_1,v_2) = s_2$
+* $similarity(v_2,v_3) = s_3$
+
+where, for $i=1,2,3...$ the scores $s_i$ $\in [0,1]$.
+
+As a concrete example, here is the output for the Labdoc `340270` which is a dictionary of the form `{"id_labdoc:{id_trace}:["id_user",score]}` saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
+
+    "340270": {"5866822": ["10893", 1], "5869856": ["10917", 0.57]}, "340978": {"5885737": ["10893", 1]}
+
+Note that the first score is always equals $1$ since it is computed with the same version ($similarity(v_1,v_1) = s_1 =1$) which is only useful for code purposes.
+</details>
+
+### How it works?
+
+<details><summary> View content </summary>
+
+To compare the similarity between two versions of the same LabDoc, the process is done in two steps. The first step involves computing a vector of numbers in $\R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP). Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed. 
+
+</details>
+<!-- markdownlint-enable MD033 -->
+
