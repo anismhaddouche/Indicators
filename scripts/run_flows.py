@@ -5,11 +5,15 @@ from flow_0 import *
 from flow_1 import *
 from flow_2 import * 
 from flow_3 import * 
+from prefect.filesystems import LocalFileSystem
 
 @flow()
-def run_flows(all:bool=False, subset:list=["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
+def run_flows(all: bool = False, subset: list = ["1376", "453", "1559", "1694", "556", "534", "1640", "1694", "451", "1237", "533", "647"]
               ):
- 
+
+
+    local_file_system_block = LocalFileSystem.load("data-block")
+    print(local_file_system_block)
     if not 'path_for_flow_1' in locals():
         path_for_flow_1 = "data/tmp/0_missions_texts"
     if not 'path_for_flow_2' in locals():

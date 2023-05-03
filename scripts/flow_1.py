@@ -63,6 +63,8 @@ def contrib_and_segmentation(config: dict, path_for_flow_1: Path) -> Path:
 
     """
     # Load the spacy model
+    # if not os.path.exists("data/tmp/1_missions_contribs"):
+    #     os.makedirs("data/tmp/1_missions_contribs")
     nlp = spacy.load(config["nlp"]["spacy_model"])
     logger = get_run_logger()
     # Get a list of all mission
@@ -109,7 +111,6 @@ def contrib_and_segmentation(config: dict, path_for_flow_1: Path) -> Path:
                             data_out[id_report][id_labdoc].append(
                                 [users, collab_matrix, id_trace, meta]
                             )
-
         Path("data/tmp/1_missions_contribs").mkdir(parents=True, exist_ok=True)
         with gzip.open(
             f"data/tmp/1_missions_contribs/{selected_mission}.json.gz",
@@ -117,11 +118,12 @@ def contrib_and_segmentation(config: dict, path_for_flow_1: Path) -> Path:
             encoding="utf-8",
         ) as zipfile:
             json.dump(data_out, zipfile, ensure_ascii=False, indent=2)
+
         nb_missions += 1
         logger.info(
             f"Mission {selected_mission} finished. There is still {len(id_missions) - nb_missions} missions"
         )
-        return Path("data/tmp/1_missions_contribs")
+    return Path("data/tmp/1_missions_contribs")
 # ----------------------------------------------------------------
 
 @flow(name ="flow_1")

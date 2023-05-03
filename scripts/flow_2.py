@@ -138,13 +138,13 @@ def semantic_indicator(config_nlp: dict, config_missions: dict)-> Path:
 
 @flow(name ="flow_2", description = "Compute all indicators (co-écriture, équilibre de contribution and the 'semantique' indicator)")
 def run_flow_2(config: dict,  path_for_flow_2: Path):
-    logger = get_run_logger()
-    try:
-        path_1_for_flow_3 = nonsemantic_indicators(config["missions"], path_for_flow_2)
-        path_2_for_flow_3 = semantic_indicator(config["nlp"]["model"],config["missions"])
-        logger.info("Flow was run succefully")
-    except Exception as e:
-        logger.critical(f"The flow did not execute correctly. The following exception occurred{e}")
+    # logger = get_run_logger()
+    # try:
+    path_1_for_flow_3 = nonsemantic_indicators(config["missions"], path_for_flow_2)
+    path_2_for_flow_3 = semantic_indicator(config["nlp"]["model"],config["missions"])
+        # logger.info("Flow was run succefully")
+    # except Exception as e:
+    #     logger.critical(f"The flow did not execute correctly. The following exception occurred{e}")
     return path_1_for_flow_3,  path_2_for_flow_3
 
 # if __name__ == "__main__":

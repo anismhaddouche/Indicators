@@ -34,13 +34,16 @@
         conda activate ml 
         python scripts/run_flows.py
 
-8. In order tu run  all flows from `Prefect` (cloud) in your browser in order to monitor the flows or run it locally with
+8. In order tu run all flows from `Prefect` (cloud) in your browser in order to monitor the flows or run it locally with
    1. Write this commands in your terminal 
         prefect server start
         prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
         prefect deployment apply run_flows-deployment.yaml &&
         prefect agent start -q default  
    2. Open `Prefect UI` (cloud or local) and click into `RUN`in the `Deployment` menu
+   3. You can skip 1, 2 and simply write in your terminal
+
+          python scripts/run_flows.py
 
 9. In order to get some reports run this command:
 
@@ -157,8 +160,11 @@ Note that the first score is always equals $1$ since it is computed with the sam
 
 <details><summary> View content </summary>
 
-To compare the similarity between two versions of the same LabDoc, the process is done in two steps. The first step involves computing a vector of numbers in $\R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP). Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed. 
+To compare the similarity between two versions of the same LabDoc, the process is done in two steps.
 
+* The first step involves computing a vector of numbers in $\R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP). 
+* Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed.
+<!-- expliquer le embedding et en quoi l'amélioration -->
 </details>
 <!-- markdownlint-enable MD033 -->
 

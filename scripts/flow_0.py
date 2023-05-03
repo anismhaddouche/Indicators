@@ -25,7 +25,8 @@ def extract_text_init(database: dict, logger) -> Path:
     # AND t2.labdoc_data IS NOT NULL AND t2.labdoc_data != '' AND t2.labdoc_data != '<p>.</p>'
     # ORDER BY t1.id_labdoc  ASC
     #  """
-
+    if not os.path.exists("data/tmp"):
+        os.makedirs("data/tmp")
     query = """
     SELECT t1.id_labdoc, t1.id_report, t1.id_ld_origin, t1.type_labdoc, t2.name, t2.labdoc_data
     FROM labdoc t1
@@ -52,6 +53,7 @@ def extract_text_init(database: dict, logger) -> Path:
         data[row[0]] = row[5]
     cur.close()
     conn.close()
+
     with gzip.open(
         "data/tmp/0_labdocs_texts_init.json.gz", "wt", encoding="utf-8"
     ) as zipfile:
