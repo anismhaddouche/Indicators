@@ -1,3 +1,4 @@
+from prefect.artifacts import create_markdown_artifact
 from pathlib import Path
 import json
 import pandas as pd
@@ -7,9 +8,11 @@ from prefect import task, flow, get_run_logger
 import mysql.connector as mariadb
 import toml
 from utils.utils import get_writing_time
+from tabulate import tabulate
+
 import warnings
 warnings.filterwarnings("ignore")
-from pathlib import Path
+
 # --------
 
 
@@ -196,9 +199,34 @@ def get_times(config_db:dict, df_summary_nonsemantic_indicators:pd.DataFrame, df
     times_df = pd.merge(times_df,df_all, on="id_trace", how ="inner")
     times_df.to_csv("data/tmp/reports/3_times.csv")
      
-    return Path("data/tmp/reports/3_times.csv")
+    return Path("data/tmp/reports/3_times.csv"), Path("data/tmp/reports/3_summary_all.csv")
 
+@task()
+def make_artifacts(times_path:Path, summary_all_path:Path)-> None : 
+    times_art = pd.read_csv(times_path)
+    summary_all_art = pd.read_csv(summary_all_path)
 
+    # table_times_art = tabulate(times_art.head(3), headers='keys',
+    #                  tablefmt='pipe', showindex=False)
+    # table_summary_all_art = tabulate(summary_all_art.head(3), headers='keys',
+    #                            tablefmt='pipe', showindex=False)
+    markdown_report = f"""
+    # An overview of the CSV files in the Reports folder
+    ## 3_summary_all
+
+            ${times_path}  
+
+    ## 3_times
+
+            ${times_path}
+    """
+    create_markdown_artifact(
+        key="reports",
+        markdown=markdown_report,
+        description=" An overview of reports",
+    )
+
+    return
 # ----------
 
 @flow(name ="flow_3", description = "Create some reports (indicators, number of word....)")
@@ -209,7 +237,9 @@ def run_flow_3(config: dict, path_1_for_flow_3,  path_2_for_flow_3) :
         df_semantic_indicator = semantic_indicator_csv(path_2_for_flow_3)
         df_summary_nonsemantic_indicators = summary_nonsemantic_indicators_csv(
             path_1_for_flow_3)
-        get_times(config_db, df_summary_nonsemantic_indicators, df_semantic_indicator)
+        
+        times_path,summary_all_path =  get_times(config_db, df_summary_nonsemantic_indicators, df_semantic_indicator)
+        make_artifacts(times_path, summary_all_path)
         logger.info("Flow was run succefully")
     except Exception as e:
         logger.critical(f"The flow did not execute correctly. The following exception occurred{e}")

@@ -11,8 +11,8 @@ database_name  = "Labnbook"
 
 [missions]
 all = false # Choose all missions in the versioning folder
-# subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
-subset = ["1376","453"]
+subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
+# subset = ["1376","453"]
 # --- Semantic indicator 
 [nlp]
 model  = "all-MiniLM-L6-v2"

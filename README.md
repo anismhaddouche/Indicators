@@ -31,16 +31,20 @@
                 all = false # Choose all missions in the versioning folder
                 subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
 
-7. In order tu run the all the flows, open a terminal, navigate to the repository `Indicators` and run the following commands:
+7. In order tu run the all the flows locally without `Prefect`, open a terminal, navigate to the repository `Indicators` and run the following commands:
 
         conda activate ml 
         python scripts/run_flows.py
 
-8. Open `Prefect` (cloud) in your browser in order to monitor the flows or run it locally with
+8. In order tu run  all flows from `Prefect` (cloud) in your browser in order to monitor the flows or run it locally with
+   1. Write this commands in your terminal 
+        prefect server start
+        prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
+        prefect deployment apply run_flows-deployment.yaml &&
+        prefect agent start -q default  
+   2. Open `Prefect UI` (cloud or local) and click into `RUN`in the `Deployment` menu
 
-        prefect server start 
-
-9. In order tu get some reports run this command:
+9. In order to get some reports run this command:
 
         streamlit run scripts/dashboard.py
 
