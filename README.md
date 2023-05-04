@@ -40,7 +40,7 @@
         prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
         prefect deployment apply run_flows-deployment.yaml &&
         prefect agent start -q default  
-   2. Open `Prefect UI` (cloud or local) and click into `RUN`in the `Deployment` menu
+   2. Open `Prefect UI` (cloud or local) and click into `RUN` in the `Deployment` menu
    3. You can skip 1, 2 and simply write in your terminal
 
           python scripts/run_flows.py
@@ -147,13 +147,13 @@ It is worth to notice that this model is used sequentially between two Labdoc ve
 * $similarity(v_1,v_2) = s_2$
 * $similarity(v_2,v_3) = s_3$
 
-where, for $i=1,2,3...$ the scores $s_i$ $\in [0,1]$.
+where, for $i=1,2,3$ the scores $s_i$ $\in [0,1]$.
 
 As a concrete example, here is the output for the Labdoc `340270` which is a dictionary of the form `{"id_labdoc:{id_trace}:["id_user",score]}` saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
 
     "340270": {"5866822": ["10893", 1], "5869856": ["10917", 0.57]}, "340978": {"5885737": ["10893", 1]}
 
-Note that the first score is always equals $1$ since it is computed with the same version ($similarity(v_1,v_1) = s_1 =1$) which is only useful for code purposes.
+Note that, the first score is always equals $1$ since it is computed with the same version ($similarity(v_1,v_1) = s_1 =1$) which is only useful for code purposes.
 </details>
 
 ### How it works?
@@ -162,7 +162,7 @@ Note that the first score is always equals $1$ since it is computed with the sam
 
 To compare the similarity between two versions of the same LabDoc, the process is done in two steps.
 
-* The first step involves computing a vector of numbers in $\R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP). 
+* The first step involves computing a vector of numbers in $R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP).
 * Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed.
 <!-- expliquer le embedding et en quoi l'amélioration -->
 </details>
