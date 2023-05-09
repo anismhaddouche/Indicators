@@ -162,9 +162,20 @@ Note that, the first score is always equals $1$ since it is computed with the sa
 
 To compare the similarity between two versions of the same LabDoc, the process is done in two steps.
 
-* The first step involves computing a vector of numbers in $R$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP).
+* The first step involves computing a vector of numbers in $R^p$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP).
 * Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed.
-<!-- expliquer le embedding et en quoi l'amélioration -->
+  
 </details>
+
+### How to improve this model ?
+
+<details><summary> View content </summary>
+
+The aim is to improve the semantic interpretation of the Labdoc content of the NLP used model. To this end, we have to improve the **embedding** of the used model (here `all-MiniLM-L6-v2`). Note that, in this project I used this model for its simplicity implementation in order to have a first draft. It is not well adapted to our dataset since we have a lot of mathematical formulas. I suggest to use in the future a well adapted model like [MathBert](https://huggingface.co/tbs17/MathBERT) since it is trained on scientific texts containing mathematical formulas.
+
+<!-- If we want to improve the **embedding** we first chose a model like [MathBert](https://huggingface.co/tbs17/MathBERT) -->
+
+</details>
+
 <!-- markdownlint-enable MD033 -->
 
