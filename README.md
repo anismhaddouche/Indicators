@@ -1,13 +1,12 @@
 
 <!-- [TOC] -->
+<!-- markdownlint-disable MD033 -->
 
 # How to run the project?
 
 In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be done by removing the `Prefect` tags (`@task, @flow and @logger`) in all python flows (as `flow_0.py`) files and ignoring steps 1 and 2 below. Here is a `Prefect` overview of all flows executed on a subset of missions.
 
-[A Prefect Overview](doc/Flow%20Run:%20uber-manatee%20%E2%80%A2%20Prefect%20Server.pdf)
-
-![Alt text](doc/Flow_Run_Prefect_Server.png)
+![A Prefect Overview](doc/Flow_Run_Prefect_Server.png)
 
 <details><summary> View content </summary>
 
@@ -92,7 +91,7 @@ The purpose of this flow is to calculate contribution matrices and some variable
 * Returns
   * The folder `data/tmp/1_missions_contrib`
 
-## [flow_2.py](scripts/flow_2.py) 
+## [flow_2.py](scripts/flow_2.py)
 
 The purpose of this flow is to calculate all indicators.
 
@@ -102,7 +101,6 @@ The purpose of this flow is to calculate all indicators.
   * The dictionary `[missions]` in `project.toml`file
 * Returns
   * The file `data/tmp/2_collab.json.gz`
-  
 
 ### Tasks 2: `semantic_indicators`
 
@@ -116,21 +114,21 @@ The purpose of this flow is to calculate all indicators.
 
 The purpose of this flow is to generate some reports.
 
-### Tasks 3: `summary_nonsemantic_indicators_csv`
+### Tasks 1: `summary_nonsemantic_indicators_csv`
 
 * Dependencies
   * The file `data/tmp/2_collab.json.gz`
 * Returns
   * The file `data/tmp/reports/3_summary_nonsemantic_indicators.csv` and its corresponding Pandas DataFrame `df_nonsemantic`
   
-### Tasks 4: `semantic_indicator_csv`
+### Tasks 2: `semantic_indicator_csv`
 
 * Dependencies
   * The file `data/tmp/reports/2_semantic.json`
 * Returns
   * The file `data/tmp/reports/3_summary_semantic_indicator.csv` and its corresponding Pandas DataFrame `df_semantic`
   
-### Tasks 5: `get_times`
+### Tasks 3: `get_times`
 
 * Dependencies
   * The Pandas DataFrames `df_nonsemantic` and `df_semantic`
@@ -139,11 +137,9 @@ The purpose of this flow is to generate some reports.
 
 </details>
 
-<!-- markdownlint-disable MD033 -->
-
 # How to improve this work?
 
-Besides the improvements concerning the quality of the python code, I propose two major improvements paths. The first one concern the nlp model in `scripts/utils/fr_LabnbookNer-0.0.0` used in the task `contrib_and_segmentation` of [flow_1.py](scripts/flow_1.py) . The second one is the model `all-MiniLM-L6-v2` used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). We give below some suggestions in order to improve these two models.
+Besides the improvements concerning the quality of the python code, I propose to *improve* the model `all-MiniLM-L6-v2` used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). To this end, we give below some suggestions.
 
 <details><summary> View content </summary>
 
@@ -151,10 +147,9 @@ Besides the improvements concerning the quality of the python code, I propose tw
 
 ### What this model does?
 
+As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). In order to have an idea of how this model is used, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic contents of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used two evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
 
-As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). More precisely, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic contents of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used two evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
-
-It is worth to notice that this model is used sequentially between two Labdoc versions. For instance, given `V1`, `V2` and `V3`, results is of the form
+It is worth to notice that this model is used sequentially between two Labdoc versions. For instance, given `v1`, `v2` and `v3`, results is of the form
 
 * $similarity(v_1,v_1) = s_1 =1$
 * $similarity(v_1,v_2) = s_2$
@@ -170,14 +165,13 @@ Note that, the first score is always equals $1$ since it is computed with the sa
 
 ### How it works?
 
-
-To compare the similarity between two versions of the same LabDoc, the process is done in two steps (See Figure 1).
+To compare the similarity between two versions of the same LabDoc, the process is done in two steps (See Figure 2)
+).
 
 * The first step involves computing a vector of numbers in $R^p$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP).
 * Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed.
   
-  ![Figure_1](doc/sim_diapo/Sans-titre-2023-03-13-1058-5.png "Figure 1")
-
+  Figure 2 ![Figure_2](doc/sim_diapo/Sans-titre-2023-03-13-1058-5.png "Figure 1")
 
 ### How to improve this model ?
 
