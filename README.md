@@ -41,12 +41,12 @@ In the following, we suppose that the ``LabNbook`` database and the ``versionnin
            python scripts/run_flows.py
 
    2. Cloud or local run with `Prefect UI`:
-      1. Write this commands in your terminal
+      1. Write these commands in your terminal
            prefect server start
            prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
            prefect deployment apply run_flows-deployment.yaml &&
            prefect agent start -q default  
-      2. Open `Prefect UI` (cloud or local) and click into `RUN` in the `Deployment` menu
+      2. Open `Prefect UI` (cloud or local) and click into `RUN` the `Deployment` menu
 
 8. In order to get some reports run this command:
 
@@ -105,7 +105,7 @@ The purpose of this flow is to calculate all indicators.
 ### Tasks 2: `semantic_indicators`
 
 * Dependencies
-  * The two dictionary `[nlp][model]` and `[missions]` in the `project.toml` file
+  * The two dictionaries `[nlp][model]` and `[missions]` in the `project.toml` file
   * The nlp model in the config section `[config_nlp]` of the file `project.toml`
 * Returns
   * The file `data/tmp/reports/2_semantic.json`
@@ -147,9 +147,9 @@ Besides the improvements concerning the quality of the python code, I propose to
 
 ### What this model does?
 
-As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). In order to have an idea of how this model is used, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic contents of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used two evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
+As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). In order to have an idea of how this model is used, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic content of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used to evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
 
-It is worth to notice that this model is used sequentially between two Labdoc versions. For instance, given `v1`, `v2` and `v3`, results is of the form
+It is worth noticing that this model is used sequentially between two Labdoc versions. For instance, given`v1`, `v2` and`v3`, results are of the form
 
 * $similarity(v_1,v_1) = s_1 =1$
 * $similarity(v_1,v_2) = s_2$
@@ -157,16 +157,15 @@ It is worth to notice that this model is used sequentially between two Labdoc ve
 
 where, for $i=1,2,3$ the scores $s_i$ $\in [0,1]$.
 
-As a concrete example, here is the output for the Labdoc `340270` which is a dictionary of the form `{"id_labdoc:{id_trace}:["id_user",score]}` saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
+As a concrete example, here is the output of the Labdoc `340270` which is a dictionary of the form `{"id_labdoc:{id_trace}:["id_user",score]}` saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
 
     "340270": {"5866822": ["10893", 1], "5869856": ["10917", 0.57]}, "340978": {"5885737": ["10893", 1]}
 
 Note that, the first score is always equals $1$ since it is computed with the same version ($similarity(v_1,v_1) = s_1 =1$) which is only useful for code purposes.
 
-### How it works?
+### How does it work?
 
-To compare the similarity between two versions of the same LabDoc, the process is done in two steps (See Figure 2)
-).
+To compare the similarity between two versions of the same LabDoc, the process is done in two steps (See Figure 2 below).
 
 * The first step involves computing a vector of numbers in $R^p$ (a tensor) for each version, denoted as $v_1$ and $v_2$, respectively. This is known as the **embedding** step in natural language processing (NLP).
 * Then, we calculate the cosine similarity between these two vectors using the formula $similarity(v_1, v_2)$. You can refer to the Python script [flow_2.py](scripts/flow_2.py) from line 104 to line 123 to understand how this calculation is performed.
@@ -176,9 +175,9 @@ To compare the similarity between two versions of the same LabDoc, the process i
 ### How to improve this model ?
 
 
-The objective is to improve the semantic interpretation, of Labdocs, of the used NLP model `all-MiniLM-L6-v2` by improving its **embedding**. Note that, in this project I used this model for its implementation simplicity in order to have a first draft. It is not well adapted to our dataset since we have a lot of mathematical formulas. For future works, I suggest to use a well adapted model like [MathBert](https://huggingface.co/tbs17/MathBERT) since it is trained on scientific texts containing mathematical formulas.
+The objective is to improve the semantic interpretation, of Labdocs, of the used NLP model `all-MiniLM-L6-v2` by improving its **embedding**. Note that, in this project I used this model for its implementation simplicity in order to have a first draft. It is not well adapted to our dataset since we have a lot of mathematical formulas. For future works, I suggest using a well-adapted model like [MathBert](https://huggingface.co/tbs17/MathBERT) since it is trained on scientific texts containing mathematical formulas.
 
-In order to improve the **embedding** of our NLP model we have to train (fine-tune) our pre-trained model to do a *task* using our set of LabDocs. A well adapted task here is the Masker Language Modeling (MLM). It is an unsupervised learning technique that involves masking tokens in a text sequence and training a model to predict the missing tokens. This creates an improved **embedding** that better captures the semantics of the text (see this [turorial](https://towardsdatascience.com/masked-language-modelling-with-bert-7d49793e5d2c)).
+In order to improve the **embedding** of our NLP model, we have to train (fine-tune) our pre-trained model to do a *task* using our set of LabDocs. A well-adapted task here is the Masker Language Modeling (MLM). It is an unsupervised learning technique that involves masking tokens in a text sequence and training a model to predict the missing tokens. This creates an improved **embedding** that better captures the semantics of the text (see this [tutorial](https://towardsdatascience.com/masked-language-modelling-with-bert-7d49793e5d2c)).
 <!-- If we want to improve the **embedding** we first chose a model like [MathBert](https://huggingface.co/tbs17/MathBERT) -->
 
 </details>
