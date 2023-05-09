@@ -3,7 +3,9 @@
 
 # How to run the project?
 
-*NB: In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be down by removing in all python flows (as `flow_0.py`) files the `Prefect` tags (`@task, @flow and @logger`) and ignoring steps 1 and 2.*
+In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be done by removing in all python flows (as `flow_0.py`) files the `Prefect` tags (`@task, @flow and @logger`) and ignoring steps 1 and 2 belows.
+
+<details><summary> View content </summary>
 
 1. Create a Prefect account following this [link](https://www.prefect.io/).
 2. Configure Prefect cloud following this [link](https://docs.prefect.io/latest/ui/cloud-local-environment/).
@@ -49,7 +51,13 @@
 
         streamlit run scripts/dashboard.py
 
+</details>
+
 # Flows description
+
+We describe here python scripts (flows) in the [scripts](scripts) folder. 
+
+<details><summary> View content </summary>
 
 ## [flow_0.py](scripts/flow_0.py)
 
@@ -127,17 +135,20 @@ The purpose of this flow is to generate some reports.
   * Returns
     * The file `data/tmp/reports/3_times.csv`
 
+</details>
+
 <!-- markdownlint-disable MD033 -->
 
 # How to improve this work?
 
 Besides the improvements concerning the quality of the python code, I propose two major improvements paths. The first one concern the nlp model in `scripts/utils/fr_LabnbookNer-0.0.0` used in the task `contrib_and_segmentation` of [flow_1.py](scripts/flow_1.py) . The second one is the model `all-MiniLM-L6-v2` used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). We give below some suggestions in order to improve these two models.
 
+<details><summary> View content </summary>
+
 ## Improve the `all-MiniLM-L6-v2` nlp model
 
 ### What this model does?
 
-<details><summary> View content </summary>
 
 As mentioned before, this model is used in the task `semantic_indicator` of the [flow_2.py](scripts/flow_2.py). More precisely, let's suppose that we have a Labdoc that evolves from a version $v_1$ to a version $v_2$ where these versions may be written by the same author of two different authors. This model takes these two versions as input and gives a score in $[0,1]$ as output. The value $0$ means that the semantic contents of $v_1$ and $v_2$ is completely different where $1$ means that it is the same semantic contents. Thus, this model is used two evaluate the semantic evolution of a LabDoc over its versions and results are saved in the file [data/tmp/2_semantic.json](data/tmp/2_semantic.json).
 
@@ -154,11 +165,9 @@ As a concrete example, here is the output for the Labdoc `340270` which is a dic
     "340270": {"5866822": ["10893", 1], "5869856": ["10917", 0.57]}, "340978": {"5885737": ["10893", 1]}
 
 Note that, the first score is always equals $1$ since it is computed with the same version ($similarity(v_1,v_1) = s_1 =1$) which is only useful for code purposes.
-</details>
 
 ### How it works?
 
-<details><summary> View content </summary>
 
 To compare the similarity between two versions of the same LabDoc, the process is done in two steps (See Figure 1).
 
@@ -167,14 +176,13 @@ To compare the similarity between two versions of the same LabDoc, the process i
   
   ![Figure_1](doc/sim_diapo/Sans-titre-2023-03-13-1058-5.png "Figure 1")
 
-</details>
 
 ### How to improve this model ?
 
-<details><summary> View content </summary>
 
-The aim is to improve the semantic interpretation of the Labdoc content of the used NLP model `all-MiniLM-L6-v2` by improving its  **embedding** corposant. Note that, in this project I used this model for its implementation simplicity in order to have a first draft. It is not well adapted to our dataset since we have a lot of mathematical formulas. I suggest to use in the future a well adapted model like [MathBert](https://huggingface.co/tbs17/MathBERT) since it is trained on scientific texts containing mathematical formulas. The following Figure explain 
-Voire [^Figure_1]
+The objective is to improve the semantic interpretation, of Labdocs, of the used NLP model `all-MiniLM-L6-v2` by improving its **embedding**. Note that, in this project I used this model for its implementation simplicity in order to have a first draft. It is not well adapted to our dataset since we have a lot of mathematical formulas. For future works, I suggest to use a well adapted model like [MathBert](https://huggingface.co/tbs17/MathBERT) since it is trained on scientific texts containing mathematical formulas.
+
+In order to improve the **embedding** of our NLP model we have to train (fine-tune) our pre-trained model to do a *task* using our set of LabDocs. A well adapted task here is the Masker Language Modeling (MLM). It is an unsupervised learning technique that involves masking tokens in a text sequence and training a model to predict the missing tokens. This creates an improved **embedding** that better captures the semantics of the text (see this [turorial](https://towardsdatascience.com/masked-language-modelling-with-bert-7d49793e5d2c)).
 <!-- If we want to improve the **embedding** we first chose a model like [MathBert](https://huggingface.co/tbs17/MathBERT) -->
 
 </details>
