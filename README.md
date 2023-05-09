@@ -3,8 +3,11 @@
 
 # How to run the project?
 
-In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be done by removing in all python flows (as `flow_0.py`) files the `Prefect` tags (`@task, @flow and @logger`) and ignoring steps 1 and 2 belows.
+In the following, we suppose that the ``LabNbook`` database and the ``versionning`` (of the form `id_report.gzip`) files are available in your local machine. Note that, the project can be run without the `Prefect` orchestrator. It can be done by removing the `Prefect` tags (`@task, @flow and @logger`) in all python flows (as `flow_0.py`) files and ignoring steps 1 and 2 below. Here is a `Prefect` overview of all flows executed on a subset of missions.
 
+[A Prefect Overview](doc/Flow%20Run:%20uber-manatee%20%E2%80%A2%20Prefect%20Server.pdf)
+
+![Alt text](doc/Flow%20Run:%20uber-manatee%20%E2%80%A2%20Prefect%20Server.png)
 <details><summary> View content </summary>
 
 1. Create a Prefect account following this [link](https://www.prefect.io/).
@@ -14,7 +17,7 @@ In the following, we suppose that the ``LabNbook`` database and the ``versionnin
         Git clone https://github.com/anismhaddouche/Indicators.git
 4. Past the `versionning` folder into the `data` folder.
 
-5. Create a virtual env with conda. If conda is not installed, follow this [link](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) in order to install it.
+5. Create a virtual env with conda. If conda is not installed, follow this [link](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
         conda env create -f python_env.yml
 
@@ -28,26 +31,24 @@ In the following, we suppose that the ``LabNbook`` database and the ``versionnin
 
    2. `missions`: choose if you want to run the project on all missions or only a subset.
 
-                all = false # Choose all missions in the versioning folder
+                all = false # True to take all missions in the versioning folder
                 subset =  ["1376","453","1559","1694","556","534","1640","1694","451","1237","533","647"]
 
-7. In order tu run the all the flows locally without `Prefect`, open a terminal, navigate to the repository `Indicators` and run the following commands:
+7. You have to option for running all flows:
+   1. Local run with `Prefect`, open a terminal, navigate to the repository `Indicators` and run the following commands:
 
-        conda activate ml 
-        python scripts/run_flows.py
+           conda activate ml 
+           python scripts/run_flows.py
 
-8. In order tu run all flows from `Prefect` (cloud) in your browser in order to monitor the flows or run it locally with
-   1. Write this commands in your terminal 
-        prefect server start
-        prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
-        prefect deployment apply run_flows-deployment.yaml &&
-        prefect agent start -q default  
-   2. Open `Prefect UI` (cloud or local) and click into `RUN` in the `Deployment` menu
-   3. You can skip 1, 2 and simply write in your terminal
+   2. Cloud or local run with `Prefect UI`:
+      1. Write this commands in your terminal
+           prefect server start
+           prefect deployment build scripts/run_flows.py:run_flows -n "labnbook" &&
+           prefect deployment apply run_flows-deployment.yaml &&
+           prefect agent start -q default  
+      2. Open `Prefect UI` (cloud or local) and click into `RUN` in the `Deployment` menu
 
-          python scripts/run_flows.py
-
-9. In order to get some reports run this command:
+8. In order to get some reports run this command:
 
         streamlit run scripts/dashboard.py
 
@@ -55,24 +56,22 @@ In the following, we suppose that the ``LabNbook`` database and the ``versionnin
 
 # Flows description
 
-We describe here python scripts (flows) in the [scripts](scripts) folder. 
+We describe here python scripts (flows) in the [scripts](scripts) folder.
 
 <details><summary> View content </summary>
 
 ## [flow_0.py](scripts/flow_0.py)
 
-The purpose of this flow is to connect to the previously installed `LabNbook` database and prepare `LabDocs` for the next flow which consists of calculating  contribution matrices.
+The purpose of this flow is to connect to the previously installed `LabNbook` database and prepare `LabDocs` for the next flow which consists in calculating contribution matrices.
 
-### Tasks (Flow_0)
+### Tasks 1: `extract_text_init`
 
-* `extract_text_init`
+* Dependencies
+  * The dictionary `[database]`in the `project.toml`file.
+* Returns
+  * The file `data/tmp/0_labdocs_texts_init.json.gz`
 
-  * Dependencies
-    * The dictionary `[database]`in the `project.toml`file.
-  * Returns
-    * The file `data/tmp/0_labdocs_texts_init.json.gz`
-
-* `extract_text`
+### Tasks 2: `extract_text`
 
 * Dependencies:
   * The dictionary `[regex_text_patterns]` in the `project.toml`file.
@@ -83,57 +82,59 @@ The purpose of this flow is to connect to the previously installed `LabNbook` da
 
 The purpose of this flow is to calculate contribution matrices and some variables that describes `LabDocs` as the number of tokens, segments, ... etc.
 
-### Tasks (Flow_1)
 
-* `contrib_and_segmentation`
-  * Dependencies
-    * The folder `data/tmp/0_missions_texts`
-    * The nlp model the config section `["nlp"]["spacy_model"]` of the file `project.toml`
-  * Returns
-    * The folder `data/tmp/1_missions_contrib`
+### Tasks 1: `contrib_and_segmentation`
+
+* Dependencies
+  * The folder `data/tmp/0_missions_texts`
+  * The nlp model the config section `[nlp][spacy_model]` of the file `project.toml`
+* Returns
+  * The folder `data/tmp/1_missions_contrib`
 
 ## [flow_2.py](scripts/flow_2.py) 
 
 The purpose of this flow is to calculate all indicators.
 
-### Tasks (Flow_2)
+### Tasks 1: `nonsemantic_indicator`
 
-* `nonsemantic_indicator`
-  * Dependencies
-    * The dictionary `["missions"]` in `project.toml`file
-  * Returns
-    * The file `data/tmp/2_collab.json.gz`
+* Dependencies
+  * The dictionary `[missions]` in `project.toml`file
+* Returns
+  * The file `data/tmp/2_collab.json.gz`
   
-* `semantic_indicators`
-  * Dependencies
-    * The two dictionary `["nlp"]["model"]` and `["missions"]` in the `project.toml` file
-    * The nlp model in the config section `[config_nlp]` of the file `project.toml`
-  * Returns
-    * The file `data/tmp/reports/2_semantic.json`
 
-## [flow_3.py](scripts/flow_3.py) 
+### Tasks 2: `semantic_indicators`
+
+* Dependencies
+  * The two dictionary `[nlp][model]` and `[missions]` in the `project.toml` file
+  * The nlp model in the config section `[config_nlp]` of the file `project.toml`
+* Returns
+  * The file `data/tmp/reports/2_semantic.json`
+
+## [flow_3.py](scripts/flow_3.py)
 
 The purpose of this flow is to generate some reports.
 
-### Tasks (Flow_3)
+### Tasks 3: `summary_nonsemantic_indicators_csv`
 
-* `summary_nonsemantic_indicators_csv`
-  * Dependencies
-    * The file `data/tmp/2_collab.json.gz`
-  * Returns
-    * The file `data/tmp/reports/3_summary_nonsemantic_indicators.csv` and its corresponding Pandas DataFrame `df_nonsemantic`
+* Dependencies
+  * The file `data/tmp/2_collab.json.gz`
+* Returns
+  * The file `data/tmp/reports/3_summary_nonsemantic_indicators.csv` and its corresponding Pandas DataFrame `df_nonsemantic`
   
-* `semantic_indicator_csv`
-  * Dependencies
-    * The file `data/tmp/reports/2_semantic.json`
-  * Returns
-    * The file `data/tmp/reports/3_summary_semantic_indicator.csv` and its corresponding Pandas DataFrame `df_semantic`
+### Tasks 4: `semantic_indicator_csv`
+
+* Dependencies
+  * The file `data/tmp/reports/2_semantic.json`
+* Returns
+  * The file `data/tmp/reports/3_summary_semantic_indicator.csv` and its corresponding Pandas DataFrame `df_semantic`
   
-* `get_times`
-  * Dependencies
-    * The file Pandas DataFrames `df_nonsemantic` and `df_semantic`
-  * Returns
-    * The file `data/tmp/reports/3_times.csv`
+### Tasks 5: `get_times`
+
+* Dependencies
+  * The Pandas DataFrames `df_nonsemantic` and `df_semantic`
+* Returns
+  * The file `data/tmp/reports/3_times.csv`
 
 </details>
 
