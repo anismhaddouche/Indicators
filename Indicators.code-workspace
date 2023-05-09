@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Projects-Formations/data-engineering-zoomcamp/week_2_workflow_orchestration/prefect-zoomcamp/flows/03_deployments"
+		}
+	],
+	"settings": {}
+}
