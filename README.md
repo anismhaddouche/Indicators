@@ -7,7 +7,8 @@ In the following, we suppose that the ``LabNbook`` database and the ``versionnin
 
 [A Prefect Overview](doc/Flow%20Run:%20uber-manatee%20%E2%80%A2%20Prefect%20Server.pdf)
 
-![Alt text](doc/Flow%20Run:%20uber-manatee%20%E2%80%A2%20Prefect%20Server.png)
+![Alt text](doc/Flow_Run_Prefect_Server.png)
+
 <details><summary> View content </summary>
 
 1. Create a Prefect account following this [link](https://www.prefect.io/).
